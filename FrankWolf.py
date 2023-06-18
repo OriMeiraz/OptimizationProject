@@ -1,24 +1,30 @@
 import numpy as np
 from numpy import linalg as LA
-
-
-def __calc_L(gamma, D, cov):
-    diff = gamma - D
-    diff_inv = LA.inv(diff)
-    return gamma**2 * (diff_inv @ cov @ diff_inv)
+from utils import calc_L, matrix_dot, get_LB_UB, get_delta
 
 
 def bisection(cov, D, radius, tol):
-    def h(gamma):
-        raise NotImplementedError("TODO: finish this function")
-        pass
+    d = D.shape[0]
 
-    eigvals, eigvecs = LA.eigh(D)
-    delta_1 = eigvals[-1]
-    v_1 = eigvecs[:, -1]
-    LB = delta_1 * (1+np.sqrt(v_1.T @ cov @ v_1)/radius)
-    UB = delta_1 * (1 + LA.trace(cov)/radius)
+    def h(gamma):
+        temp = gamma*np.eye(d) - D
+        temp = LA.inv(temp)
+        temp = np.eye(d) - gamma*temp
+        temp = temp @ temp
+        temp = matrix_dot(temp, cov)
+        return radius**2 - temp
+    LB, UB = get_LB_UB(cov, D, radius)
 
     while True:
         gamma = (LB + UB)/2
-        raise NotImplementedError("TODO: finish this function")
+        L = calc_L(gamma, D, cov)
+        h_gamma = h(gamma)
+        if h_gamma < 0:
+            LB = gamma
+        else:
+            UB = gamma
+        delta = get_delta(gamma, D, cov, radius, L)
+        if h_gamma > 0 and delta < tol:
+            break
+
+    return L
