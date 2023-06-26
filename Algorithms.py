@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linalg as LA
-from utils import calc_L, matrix_dot, get_LB_UB, get_delta
+from utils import calc_L, matrix_dot, get_LB_UB, get_delta, get_mu_sigma
 from math import sqrt
 
 
@@ -54,5 +54,16 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
     return S
 
 
-def robustKalmanFilter(cov, state, radius, tol, A, BB, C, DD, BD, n: int, max_iter=1000):
-    pass
+def robustKalmanFilter(V, x, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
+    mu, sigma = get_mu_sigma(A, BBT, C, DDT, BDT, V, x)
+    mu_y = mu[n:]
+    y = np.random.multivariate_normal(mu_y, sigma)[:n]
+    S = frank_wolfe(sigma, radius, tol, n, max_iter)
+    S_yy = S[n:, n:]
+    S_xy = S[:n, n:]
+    S_yx = S_xy.T
+    S_xx = S[:n, :n]
+    S_yy_inv = LA.inv(S_yy)
+    V = S_xx - S_xy @ S_yy_inv @ S_yx
+    x = S_xy @ S_yy_inv @ (y - mu_y) + mu[:n]
+    return V, x

@@ -1,10 +1,11 @@
 import numpy as np
 import exp1_utils as eu
 import utils
+import Algorithms as alg
 from tqdm import trange, tqdm
 
 
-def run(time_var: bool, small: bool, total: int = 1000):
+def run(time_var: bool, small: bool, radius, total: int = 1000):
     get_uncertainty = eu.getUncertainty(time_var, small, total)
     C = np.array([1, -1])
     DDT = np.array([1])
@@ -14,9 +15,10 @@ def run(time_var: bool, small: bool, total: int = 1000):
     V = np.eye(2)
     x_hat = eu.get_x0_hat()
     for _ in trange(total):
-        A = eu.get_At(get_uncertainty)
-        mu, sigma = eu.get_mu_sigma(A, BBT, C, DDT, BDT, V, x_hat)
-        continue
+        A = utils.get_At(get_uncertainty)
+        V, x_hat = alg.robustKalmanFilter(
+            V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n)
+
         raise NotImplementedError('finish run')
 
 
