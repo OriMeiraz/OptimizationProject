@@ -52,3 +52,7 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
         stoping_criterion = True
         raise NotImplementedError()
     return S
+
+
+def robustKalmanFilter(cov, state, radius, tol, A, BB, C, DD, BD, n: int, max_iter=1000):
+    pass
