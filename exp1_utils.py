@@ -25,10 +25,10 @@ def get_At(get_uncertainty):
 
 
 def get_x0_hat():
-    return np.random.randn(0, np.eye(2))
+    return np.random.multivariate_normal(np.zeros(2), np.eye(2))
 
 
-def calc_rightV(BBT, C, DDT, BDT):
+def calc_right_sigma(BBT, C, DDT, BDT):
     if tuple(C.shape) == (2, 1):
         C = C.T
     elif len(C.shape) == 1:
@@ -48,7 +48,7 @@ def calc_rightV(BBT, C, DDT, BDT):
     return np.block([[first, second], [third, fourth]])
 
 
-def calc_leftV(A, C, V):
+def calc_left_sigma(A, C, V):
     if tuple(C.shape) == (2, 1):
         C = C.T
     elif len(C.shape) == 1:
@@ -60,7 +60,25 @@ def calc_leftV(A, C, V):
     return block @ V @ block.T
 
 
-def calc_v(A, BBT, C, DDT, BDT, V):
-    left = calc_leftV(A, C, V)
-    right = calc_rightV(BBT, C, DDT, BDT)
+def calc_sigma(A, BBT, C, DDT, BDT, V):
+    left = calc_left_sigma(A, C, V)
+    right = calc_right_sigma(BBT, C, DDT, BDT)
     return left + right
+
+
+def calc_mu(A, C, x):
+    if tuple(C.shape) == (2, 1):
+        C = C.T
+    elif len(C.shape) == 1:
+        C = C.reshape(1, -1)
+        top = A
+
+    bottom = C @ A
+    block = np.block([[top], [bottom]])
+    return block @ x
+
+
+def get_mu_sigma(A, BBT, C, DDT, BDT, V, x):
+    mu = calc_mu(A, C, x)
+    sigma = calc_sigma(A, BBT, C, DDT, BDT, V)
+    return mu, sigma
