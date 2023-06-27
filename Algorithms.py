@@ -42,6 +42,7 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
         alpha = 2/(k+2)
         S_xy = S[:n, n:]
         S_yy = S[n:, n:]
+        S_xx = S[:n, :n]
         G = S_xy @ LA.inv(S_yy)
         In_G = np.concatenate((np.eye(n), G), axis=1)
         D = In_G.T @ In_G
@@ -49,15 +50,18 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
         L = bisection(cov, D, radius, eps)
         S += alpha * (L - S)
         k += 1
-        stoping_criterion = True
-        raise NotImplementedError()
+
+        current_res = abs((L - S).flatten() @ D.flatten())
+        current_obj = np.trace(S_xx - G @ S_xy.T)
+        stoping_criterion = (current_res / current_obj < tol)
     return S
 
 
-def robustKalmanFilter(V, x, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
-    mu, sigma = get_mu_sigma(A, BBT, C, DDT, BDT, V, x)
+def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
+    mu, sigma = get_mu_sigma(A, BBT, C, DDT, BDT, V, x_hat)
     mu_y = mu[n:]
-    y = np.random.multivariate_normal(mu_y, sigma)[:n]
+    y = np.random.multivariate_normal(mu, sigma)[n:]
+    x = np.random.multivariate_normal(mu, sigma)[:n]
     S = frank_wolfe(sigma, radius, tol, n, max_iter)
     S_yy = S[n:, n:]
     S_xy = S[:n, n:]
@@ -65,5 +69,5 @@ def robustKalmanFilter(V, x, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=
     S_xx = S[:n, :n]
     S_yy_inv = LA.inv(S_yy)
     V = S_xx - S_xy @ S_yy_inv @ S_yx
-    x = S_xy @ S_yy_inv @ (y - mu_y) + mu[:n]
-    return V, x
+    x_hat = S_xy @ S_yy_inv @ (y - mu_y) + mu[:n]
+    return V, x_hat, (x, y)

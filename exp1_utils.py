@@ -24,5 +24,9 @@ def get_At(get_uncertainty):
     return A
 
 
-def get_x0_hat():
+def get_x0():
     return np.random.multivariate_normal(np.zeros(2), np.eye(2))
+
+
+def get_x0_hat():
+    return np.array([0, 0])
