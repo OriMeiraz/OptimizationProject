@@ -1,5 +1,5 @@
 import numpy as np
-import exp1_utils as eu
+import exp2_utils as eu
 import Algorithms as alg
 from tqdm import trange
 import pandas as pd
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     radius = args.radius
     tol = args.tol
     print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
-    exit()
-    path = f'Experiment1/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
+
+    path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
     try:
         os.mkdir(path)
     except FileExistsError:
