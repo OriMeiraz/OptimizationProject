@@ -37,8 +37,8 @@ def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--time_var', type=bool, default=False)
-    parser.add_argument('--small', type=bool, default=False)
+    parser.add_argument('--time_var', type=utils.str2bool, default=False)
+    parser.add_argument('--small', type=utils.str2bool, default=False)
     parser.add_argument('--radius', type=float, default=1e-1)
     parser.add_argument('--seed', type=int, default=2)
     parser.add_argument('--tol', type=float, default=1e-8)
@@ -50,6 +50,7 @@ if __name__ == '__main__':
     radius = args.radius
     tol = args.tol
     print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
+    exit()
     path = f'Experiment1/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
     try:
         os.mkdir(path)

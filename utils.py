@@ -1,5 +1,17 @@
 import numpy as np
 from numpy import linalg as LA
+import argparse
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    print(v)
+    raise argparse.ArgumentTypeError(f'Boolean value expected - got {v}.')
 
 
 def calc_L(gamma, D, cov):
