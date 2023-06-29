@@ -8,6 +8,7 @@ from scipy.linalg import sqrtm
 import pickle
 import time
 import os
+import argparse
 
 
 def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
@@ -35,13 +36,28 @@ def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--time_var', type=bool, default=False)
+    parser.add_argument('--small', type=bool, default=False)
+    parser.add_argument('--radius', type=float, default=1e-1)
+    parser.add_argument('--seed', type=int, default=2)
+    parser.add_argument('--tol', type=float, default=1e-8)
+
+    args = parser.parse_args()
+    np.random.seed(args.seed)
+    tv = args.time_var
+    small = args.small
+    radius = args.radius
+    tol = args.tol
+    print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
+    path = f'Experiment1/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
     try:
-        os.mkdir(
-            f'Experiment1/saved_data/tv_{False}__small_{False}__rad_{1e-1}')
-    except:
+        os.mkdir(path)
+    except FileExistsError:
         pass
+
     for i in trange(500):
-        df = run(False, False, 1e-1, 1e-8, 1000)
+        df = run(tv, small, radius, tol)
         # save df to saved_data
         df.to_csv(
-            f'Experiment1/saved_data/tv_{False}__small_{False}__rad_{1e-1}/exp_{i}.csv')
+            f'{path}/exp_{i}.csv')
