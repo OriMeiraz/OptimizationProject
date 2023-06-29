@@ -4,8 +4,6 @@ import Algorithms as alg
 from tqdm import trange
 import pandas as pd
 import utils
-from scipy.linalg import sqrtm
-import pickle
 import time
 import os
 import argparse
@@ -19,14 +17,13 @@ def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
     BDT = np.array([0, 0])
     BBT = np.array([[1.9608, 0.0195],
                     [0.0195, 1.9605]])
-    1 == 1
     V = np.eye(2)
     x = eu.get_x0()
     x_hat = eu.get_x0_hat()
 
     n = 2
     t0 = time.time()
-    for _ in range(total):
+    for i in trange(total, leave=False):
         A = eu.get_At(get_uncertainty)
         V, x_hat, (x, _) = alg.robustKalmanFilter(
             V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n)

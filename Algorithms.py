@@ -60,8 +60,11 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
 def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
     mu, sigma = get_mu_sigma(A, BBT, C, DDT, BDT, V, x_hat)
     mu_y = mu[n:]
-    y = np.random.multivariate_normal(mu, sigma)[n:]
-    x = np.random.multivariate_normal(mu, sigma)[:n]
+
+    z = np.random.multivariate_normal(mu, sigma, check_valid='raise')
+    x = z[:n]
+    y = z[n:]
+
     S = frank_wolfe(sigma, radius, tol, n, max_iter)
     S_yy = S[n:, n:]
     S_xy = S[:n, n:]

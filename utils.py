@@ -82,8 +82,8 @@ def calc_mu(A, C, x):
         C = C.T
     elif len(C.shape) == 1:
         C = C.reshape(1, -1)
-        top = A
 
+    top = A
     bottom = C @ A
     block = np.block([[top], [bottom]])
     return block @ x
@@ -92,4 +92,6 @@ def calc_mu(A, C, x):
 def get_mu_sigma(A, BBT, C, DDT, BDT, V, x):
     mu = calc_mu(A, C, x)
     sigma = calc_sigma(A, BBT, C, DDT, BDT, V)
+    assert np.isclose(sigma, sigma.T).all()
+    sigma = (sigma + sigma.T)/2
     return mu, sigma
