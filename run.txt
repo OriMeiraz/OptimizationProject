@@ -1,1 +1,1 @@
-python exp1.py 
+python exp2.py --time_var True --small True --radius 0.1 --seed 2 --tol 1e-8
