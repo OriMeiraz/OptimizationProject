@@ -58,52 +58,65 @@ def load_data(tv, small, tol):
     return get_best_radius(tv, small, tol)
 
 
-if __name__ == '__main__':
+def run_experiment(tv, small, radius, tol):
+    path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
+    os.makedirs(path, exist_ok=True)
+    for i in trange(500, leave=False, desc=f'running for radius {radius}'):
+        df = run(tv, small, radius, tol)
+        df.to_csv(f'{path}/exp_{i}.csv', index=False)
+
+
+def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--time_var', type=utils.str2bool, default=False)
     parser.add_argument('--small', type=utils.str2bool, default=False)
     parser.add_argument('--radius', type=float, default=0)
     parser.add_argument('--seed', type=int, default=2)
     parser.add_argument('--tol', type=float, default=1e-4)
-    parser.add_argument('--run_exp', type=utils.str2bool, default=False)
+    parser.add_argument('--run_exp', type=utils.str2bool, default=True)
 
     args = parser.parse_args()
+    return args
+
+
+def plot_data(tv, small, tol):
+    # check if norms is saved, if not save it
+    if not os.path.exists(f'norms.npy'):
+        _, norms = load_data(tv, small, tol)
+        np.save('norms.npy', norms)
+    else:
+        print('loading norms')
+        norms = np.load('norms.npy')
+
+    means = norms.mean(axis=0)
+    means = eu.smooth(10*np.log10(means), 19)
+    plt.semilogx(range(1, len(means)+1), means)
+    plt.xlim([1, len(means)])
+    plt.show()
+
+
+if __name__ == '__main__':
+    args = get_args()
     np.random.seed(args.seed)
     tv = args.time_var
     small = args.small
     radius = args.radius
     tol = args.tol
     run_exp = args.run_exp
+
     if radius <= 0:
         print(
             f'time_var: {tv}, small: {small}, radius: checking all, tol: {tol}')
     else:
         print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
-    raise NotImplementedError("implement when radius is 0")
-    path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
-    try:
-        os.mkdir(path)
-    except FileExistsError:
-        pass
+
     if run_exp:
-        for i in trange(500):
-            df = run(tv, small, radius, tol)
-            # save df to saved_data
-            df.to_csv(
-                f'{path}/exp_{i}.csv')
-    else:
-        # check if norms is saved, if not save it
-        if not os.path.exists(f'norms.npy'):
-            _, norms = load_data(tv, small, tol)
-            np.save('norms.npy', norms)
+        if radius <= 0:
+            for radius in tqdm(np.linspace(0.1, 0.2, 11), desc="running all radius"):
+                radius = round(radius, 2)
+                print(f'running for radius {radius}')
+                run_experiment(tv, small, radius, tol)
         else:
-            print('loading norms')
-            norms = np.load('norms.npy')
-
-        means = norms.mean(axis=0)
-        means = eu.smooth(10*np.log10(means), 19)
-        plt.semilogx(range(1, len(means)+1), means)
-        plt.xlim([1, len(means)])
-        plt.show()
-
-        # raise NotImplementedError("implement loading of data")
+            run_experiment(tv, small, radius, tol)
+    else:
+        plot_data(tv, small, tol)
