@@ -7,6 +7,7 @@ import utils
 import time
 import os
 import argparse
+import matplotlib.pyplot as plt
 
 
 def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
@@ -54,16 +55,16 @@ def get_best_radius(tv, small, tol):
 
 
 def load_data(tv, small, tol):
-    get_best_radius(tv, small, tol)
+    return get_best_radius(tv, small, tol)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--time_var', type=utils.str2bool, default=False)
     parser.add_argument('--small', type=utils.str2bool, default=False)
-    parser.add_argument('--radius', type=float, default=1e-1)
+    parser.add_argument('--radius', type=float, default=0)
     parser.add_argument('--seed', type=int, default=2)
-    parser.add_argument('--tol', type=float, default=1e-8)
+    parser.add_argument('--tol', type=float, default=1e-4)
     parser.add_argument('--run_exp', type=utils.str2bool, default=False)
 
     args = parser.parse_args()
@@ -73,8 +74,12 @@ if __name__ == '__main__':
     radius = args.radius
     tol = args.tol
     run_exp = args.run_exp
-    print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
-
+    if radius <= 0:
+        print(
+            f'time_var: {tv}, small: {small}, radius: checking all, tol: {tol}')
+    else:
+        print(f'time_var: {tv}, small: {small}, radius: {radius}, tol: {tol}')
+    raise NotImplementedError("implement when radius is 0")
     path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
     try:
         os.mkdir(path)
@@ -87,5 +92,18 @@ if __name__ == '__main__':
             df.to_csv(
                 f'{path}/exp_{i}.csv')
     else:
-        load_data(tv, small, tol)
+        # check if norms is saved, if not save it
+        if not os.path.exists(f'norms.npy'):
+            _, norms = load_data(tv, small, tol)
+            np.save('norms.npy', norms)
+        else:
+            print('loading norms')
+            norms = np.load('norms.npy')
+
+        means = norms.mean(axis=0)
+        means = eu.smooth(10*np.log10(means), 19)
+        plt.semilogx(range(1, len(means)+1), means)
+        plt.xlim([1, len(means)])
+        plt.show()
+
         # raise NotImplementedError("implement loading of data")
