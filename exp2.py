@@ -114,7 +114,6 @@ if __name__ == '__main__':
         if radius <= 0:
             for radius in tqdm(np.linspace(0.1, 0.2, 11), desc="running all radius"):
                 radius = round(radius, 2)
-                print(f'running for radius {radius}')
                 run_experiment(tv, small, radius, tol)
         else:
             run_experiment(tv, small, radius, tol)
