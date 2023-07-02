@@ -59,6 +59,15 @@ def load_data(tv, small, tol):
 
 
 def run_experiment(tv, small, radius, tol):
+    if tv == 'all':
+        for tv in tqdm(['True', 'False'], leave=False, desc='running all tv values'):
+            run_experiment(tv, small, radius, tol)
+        return
+    if small == 'all':
+        for small in tqdm(['True', 'False'], leave=False, desc='running all small values'):
+            run_experiment(tv, small, radius, tol)
+        return
+
     path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{radius}__tol_{tol}'
     os.makedirs(path, exist_ok=True)
     for i in trange(500, leave=False, desc=f'running for radius {radius}'):
@@ -68,8 +77,10 @@ def run_experiment(tv, small, radius, tol):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--time_var', type=utils.str2bool, default=False)
-    parser.add_argument('--small', type=utils.str2bool, default=False)
+    parser.add_argument('--time_var', type=str,
+                        default='False', choices=['True', 'False', 'all'])
+    parser.add_argument('--small', type=str, default='False',
+                        choices=['True', 'False', 'all'])
     parser.add_argument('--radius', type=float, default=0)
     parser.add_argument('--seed', type=int, default=2)
     parser.add_argument('--tol', type=float, default=1e-4)
