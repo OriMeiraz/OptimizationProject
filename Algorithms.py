@@ -31,10 +31,12 @@ def bisection(cov, D, radius, tol):
     return L
 
 
-def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
-    sigma_low = np.min(LA.eigvals(cov))
-    sigma_high = (radius + sqrt(cov.trace()))**2
-    C_high = 2 * np.power(sigma_high, 4) / np.power(sigma_low, 3)
+def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
+    if not like_code:
+        sigma_low = np.min(LA.eigvals(cov))
+        sigma_high = (radius + sqrt(cov.trace()))**2
+        C_high = 2 * np.power(sigma_high, 4) / np.power(sigma_low, 3)
+
     S = cov
     k = 0
     stoping_criterion = False
@@ -46,8 +48,11 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000):
         G = S_xy @ LA.inv(S_yy)
         In_G = np.concatenate((np.eye(n), G), axis=1)
         D = In_G.T @ In_G
-        eps = alpha * tol * C_high
-        L = bisection(cov, D, radius, eps)
+        if not like_code:
+            eps = alpha * tol * C_high
+            L = bisection(cov, D, radius, eps)
+        else:
+            L = bisection(cov, D, radius, tol)
         S += alpha * (L - S)
         k += 1
 
