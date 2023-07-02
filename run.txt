@@ -1,1 +1,1 @@
-python exp2.py --time_var True --small True
+python exp2.py --time_var False --small False

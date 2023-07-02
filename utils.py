@@ -26,10 +26,10 @@ def matrix_dot(A, B):
 
 def get_LB_UB(cov, D, radius):
     eigvals, eigvecs = LA.eigh(D)
-    delta_1 = eigvals[-1]
+    lambda_1 = eigvals[-1]
     v_1 = eigvecs[:, -1]
-    LB = delta_1 * (1+np.sqrt(v_1.T @ cov @ v_1)/radius)
-    UB = delta_1 * (1 + np.trace(cov)/radius)
+    LB = lambda_1 * (1+np.sqrt(v_1.T @ cov @ v_1)/radius)
+    UB = lambda_1 * (1 + np.sqrt(np.trace(cov))/radius)
     return LB, UB
 
 

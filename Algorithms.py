@@ -6,14 +6,16 @@ from math import sqrt
 
 def bisection(cov, D, radius, tol):
     d = D.shape[0]
+    Id = np.eye(d)
 
     def h(gamma):
-        temp = gamma*np.eye(d) - D
+        temp = gamma*Id - D
         temp = LA.inv(temp)
-        temp = np.eye(d) - gamma*temp
+        temp = Id - gamma*temp
         temp = temp @ temp
         temp = matrix_dot(temp, cov)
         return radius**2 - temp
+
     LB, UB = get_LB_UB(cov, D, radius)
 
     while True:
@@ -25,7 +27,7 @@ def bisection(cov, D, radius, tol):
         else:
             UB = gamma
         delta = get_delta(gamma, D, cov, radius, L)
-        if h_gamma > 0 and delta < tol:
+        if h_gamma >= 0 and delta < tol:
             break
 
     return L
@@ -46,7 +48,7 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
         S_yy = S[n:, n:]
         S_xx = S[:n, :n]
         G = S_xy @ LA.inv(S_yy)
-        In_G = np.concatenate((np.eye(n), G), axis=1)
+        In_G = np.concatenate((np.eye(n), -G), axis=1)
         D = In_G.T @ In_G
         if not like_code:
             eps = alpha * tol * C_high
