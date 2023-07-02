@@ -78,8 +78,8 @@ def run_experiment(tv, small, radius, tol):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--time_var', type=str,
-                        default='False', choices=['True', 'False', 'all'])
-    parser.add_argument('--small', type=str, default='False',
+                        default='all', choices=['True', 'False', 'all'])
+    parser.add_argument('--small', type=str, default='all',
                         choices=['True', 'False', 'all'])
     parser.add_argument('--radius', type=float, default=0)
     parser.add_argument('--seed', type=int, default=2)
