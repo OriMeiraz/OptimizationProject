@@ -59,7 +59,7 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
             L = bisection(cov, D, radius, eps)
         else:
             L = bisection(cov, D, radius, tol)
-        S += alpha * (L - S)
+        S = (1-alpha) * S + alpha * L
         k += 1
 
         current_res = abs((L - S).flatten() @ D.flatten())
