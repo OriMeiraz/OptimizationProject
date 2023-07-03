@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import linalg as LA
 import argparse
+from scipy.linalg import inv
 
 
 def str2bool(v):
@@ -14,9 +15,11 @@ def str2bool(v):
     raise argparse.ArgumentTypeError(f'Boolean value expected - got {v}.')
 
 
-def calc_L(gamma, D, cov):
-    diff = gamma*np.eye(D.shape[0]) - D
-    diff_inv = LA.inv(diff)
+def calc_L(gamma, D, cov, Id=None):
+    if Id is None:
+        Id = np.eye(D.shape[0])
+    diff = gamma*Id - D
+    diff_inv = inv(diff)
     return gamma * gamma * (diff_inv @ cov @ diff_inv), diff_inv
 
 

@@ -1,0 +1,2 @@
+python exp2.py --small False & 
+python exp2.py --small True & 

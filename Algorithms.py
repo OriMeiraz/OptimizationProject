@@ -2,6 +2,7 @@ import numpy as np
 from numpy import linalg as LA
 from utils import calc_L, matrix_dot, get_LB_UB, get_delta, get_mu_sigma
 from math import sqrt
+from scipy.linalg import inv
 
 
 def bisection(cov, D, radius, tol):
@@ -10,17 +11,17 @@ def bisection(cov, D, radius, tol):
 
     def h(gamma, diff_inv=None):
         if diff_inv is None:
-            diff_inv = LA.inv(gamma*Id - D)
+            diff_inv = inv(gamma*Id - D)
         temp = Id - gamma*diff_inv
         temp = temp @ temp
         temp = matrix_dot(temp, cov)
-        return radius**2 - temp
+        return radius*radius - temp
 
     LB, UB = get_LB_UB(cov, D, radius)
 
     while True:
         gamma = (LB + UB)/2
-        L, diff_inv = calc_L(gamma, D, cov)
+        L, diff_inv = calc_L(gamma, D, cov, Id)
         h_gamma = h(gamma, diff_inv)
         if h_gamma < 0:
             LB = gamma
@@ -47,7 +48,10 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
         S_xy = S[:n, n:]
         S_yy = S[n:, n:]
         S_xx = S[:n, :n]
-        G = S_xy @ LA.inv(S_yy)
+        if S_yy.shape[0] == 1 and S_yy.shape[1] == 1:
+            G = S_xy / S_yy
+        else:
+            G = S_xy @ inv(S_yy)
         In_G = np.concatenate((np.eye(n), -G), axis=1)
         D = In_G.T @ In_G
         if not like_code:
@@ -62,19 +66,20 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
         current_obj = np.trace(S_xx - G @ S_xy.T)
         stoping_criterion = (current_res / current_obj < tol)
 
-    G = S[:n, n:] @ LA.inv(S[n:, n:])
+    S_yy = S[n:, n:]
+    if S_yy.shape[0] == 1 and S_yy.shape[1] == 1:
+        G = S[:n, n:] / S_yy
+    else:
+        G = S[:n, n:] @ inv(S[n:, n:])
     return S, G
 
 
-def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
+def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, y,
+                       n: int, max_iter=1000):
     mu, sigma = get_mu_sigma(A, BBT, C, DDT, BDT, V, x_hat)
     mu_y = mu[n:]
-
-    z = np.random.multivariate_normal(mu, sigma, check_valid='raise')
-    x = z[:n]
-    y = z[n:]
 
     S, G = frank_wolfe(sigma, radius, tol, n, max_iter)
     V = S[:n, :n] - G @ S[n:, :n]
     x_hat = G @ (y-mu_y) + mu[:n]
-    return V, x_hat, (x, y)
+    return V, x_hat

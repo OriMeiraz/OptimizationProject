@@ -37,7 +37,11 @@ def get_At(get_uncertainty):
 
 
 def get_x0():
-    return np.random.multivariate_normal(np.zeros(2), np.eye(2))
+    return np.zeros(2)
+
+
+def get_y0():
+    return np.zeros
 
 
 def get_x0_hat():

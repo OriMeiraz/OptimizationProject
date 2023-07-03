@@ -8,26 +8,38 @@ import time
 import os
 import argparse
 import matplotlib.pyplot as plt
+from scipy.linalg import sqrtm
+
+
+C = np.array([1, -1])
+B = np.array([[1.9608, 0.0195],
+              [0.0195, 1.9605]])
+B = np.concatenate((sqrtm(B), np.zeros((2, 1))), axis=1)
+D = np.array([0, 0, 1])
+DDT = np.array([1])
+BDT = np.array([0, 0])
+BBT = np.array([[1.9608, 0.0195],
+                [0.0195, 1.9605]])
 
 
 def run(time_var: bool, small: bool, radius, tol, total: int = 1000):
     all_norm_t = []
     get_uncertainty = eu.getUncertainty(time_var, small, total)
-    C = np.array([1, -1])
-    DDT = np.array([1])
-    BDT = np.array([0, 0])
-    BBT = np.array([[1.9608, 0.0195],
-                    [0.0195, 1.9605]])
+
     V = np.eye(2)
     x = eu.get_x0()
+    y = eu.get_y0()
     x_hat = eu.get_x0_hat()
 
     n = 2
     t0 = time.time()
-    for i in trange(total, leave=False):
+    for _ in trange(total, leave=False):
         A = eu.get_At(get_uncertainty)
-        V, x_hat, (x, _) = alg.robustKalmanFilter(
-            V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n)
+        x = A @ x + B @ np.random.randn(3)
+        y = C @ x + D @ np.random.randn(3)
+        V, x_hat = alg.robustKalmanFilter(
+            V, x_hat, radius, tol, A, BBT, C, DDT, BDT, y, n)
+
         norm = np.linalg.norm(x_hat - x)**2
         all_norm_t.append((norm, time.time() - t0))
     return pd.DataFrame(all_norm_t, columns=['norm', 'time'])
@@ -85,7 +97,7 @@ def get_args():
     parser.add_argument('--small', type=str, default='all',
                         choices=['True', 'False', 'all'])
     parser.add_argument('--radius', type=float, default=0)
-    parser.add_argument('--seed', type=int, default=2)
+    parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--tol', type=float, default=1e-8)
     parser.add_argument('--run_exp', type=utils.str2bool, default=True)
 
