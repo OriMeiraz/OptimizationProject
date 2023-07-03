@@ -61,7 +61,9 @@ def frank_wolfe(cov, radius, tol, n: int, max_iter=1000, like_code=True):
         current_res = abs((L - S).flatten() @ D.flatten())
         current_obj = np.trace(S_xx - G @ S_xy.T)
         stoping_criterion = (current_res / current_obj < tol)
-    return S
+
+    G = S[:n, n:] @ LA.inv(S[n:, n:])
+    return S, G
 
 
 def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n: int, max_iter=1000):
@@ -72,12 +74,7 @@ def robustKalmanFilter(V, x_hat, radius, tol, A, BBT, C, DDT, BDT, n: int, max_i
     x = z[:n]
     y = z[n:]
 
-    S = frank_wolfe(sigma, radius, tol, n, max_iter)
-    S_yy = S[n:, n:]
-    S_xy = S[:n, n:]
-    S_yx = S_xy.T
-    S_xx = S[:n, :n]
-    S_yy_inv = LA.inv(S_yy)
-    V = S_xx - S_xy @ S_yy_inv @ S_yx
-    x_hat = S_xy @ S_yy_inv @ (y - mu_y) + mu[:n]
+    S, G = frank_wolfe(sigma, radius, tol, n, max_iter)
+    V = S[:n, :n] - G @ S[n:, :n]
+    x_hat = G @ (y-mu_y) + mu[:n]
     return V, x_hat, (x, y)

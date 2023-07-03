@@ -47,11 +47,14 @@ def get_best_radius(tv, small, tol):
 
     # get all the mean norms for the best radius
     all_norm = []
-    for i in trange(500, leave=False, desc=f'loading for best radius ({radius})'):
+    min_rad = np.linspace(0.1, 0.2, 11)[np.argmin(all_norms)]
+    min_rad = round(min_rad, 2)
+    path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{min_rad}__tol_{tol}'
+    for i in trange(500, leave=False, desc=f'loading for best radius ({min_rad})'):
         df = pd.read_csv(
             f'{path}/exp_{i}.csv')
         all_norm.append(df['norm'].values)
-    return np.linspace(0.1, 0.2, 11)[np.argmin(all_norms)], np.array(all_norm)
+    return min_rad, np.array(all_norm)
 
 
 def load_data(tv, small, tol):
