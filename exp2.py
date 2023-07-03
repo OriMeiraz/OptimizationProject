@@ -86,7 +86,7 @@ def get_args():
                         choices=['True', 'False', 'all'])
     parser.add_argument('--radius', type=float, default=0)
     parser.add_argument('--seed', type=int, default=2)
-    parser.add_argument('--tol', type=float, default=1e-4)
+    parser.add_argument('--tol', type=float, default=1e-8)
     parser.add_argument('--run_exp', type=utils.str2bool, default=True)
 
     args = parser.parse_args()

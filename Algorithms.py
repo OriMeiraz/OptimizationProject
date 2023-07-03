@@ -8,10 +8,10 @@ def bisection(cov, D, radius, tol):
     d = D.shape[0]
     Id = np.eye(d)
 
-    def h(gamma):
-        temp = gamma*Id - D
-        temp = LA.inv(temp)
-        temp = Id - gamma*temp
+    def h(gamma, diff_inv=None):
+        if diff_inv is None:
+            diff_inv = LA.inv(gamma*Id - D)
+        temp = Id - gamma*diff_inv
         temp = temp @ temp
         temp = matrix_dot(temp, cov)
         return radius**2 - temp
@@ -20,13 +20,13 @@ def bisection(cov, D, radius, tol):
 
     while True:
         gamma = (LB + UB)/2
-        L = calc_L(gamma, D, cov)
-        h_gamma = h(gamma)
+        L, diff_inv = calc_L(gamma, D, cov)
+        h_gamma = h(gamma, diff_inv)
         if h_gamma < 0:
             LB = gamma
         else:
             UB = gamma
-        delta = get_delta(gamma, D, cov, radius, L)
+        delta = get_delta(gamma, D, cov, radius, L, diff_inv)
         if h_gamma >= 0 and delta < tol:
             break
 

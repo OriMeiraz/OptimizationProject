@@ -17,11 +17,11 @@ def str2bool(v):
 def calc_L(gamma, D, cov):
     diff = gamma*np.eye(D.shape[0]) - D
     diff_inv = LA.inv(diff)
-    return gamma**2 * (diff_inv @ cov @ diff_inv)
+    return gamma * gamma * (diff_inv @ cov @ diff_inv), diff_inv
 
 
 def matrix_dot(A, B):
-    return np.trace(A @ B)
+    return (A * B).sum()
 
 
 def get_LB_UB(cov, D, radius):
@@ -33,10 +33,12 @@ def get_LB_UB(cov, D, radius):
     return LB, UB
 
 
-def get_delta(gamma, D, cov, radius, L):
+def get_delta(gamma, D, cov, radius, L, diff_inv=None):
+    if diff_inv is None:
+        diff_inv = LA.inv(gamma*np.eye(D.shape[0]) - D)
     d = D.shape[0]
     return gamma * (radius**2 - cov.trace()) - matrix_dot(L, D) +\
-        gamma**2 * matrix_dot(LA.inv(gamma * np.eye(d) - D), cov)
+        gamma**2 * matrix_dot(diff_inv, cov)
 
 
 def calc_right_sigma(BBT, C, DDT, BDT):
