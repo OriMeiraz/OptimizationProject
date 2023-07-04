@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.linalg as LA
 
 
 def generate_data(sys, x_0, T, coeff, is_TV):

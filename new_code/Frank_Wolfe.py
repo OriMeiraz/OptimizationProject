@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.linalg as LA
-
+from scipy.linalg import inv
 
 def Frank_Wolfe(mu, Sigma, rho, x_dim, opts=None):
     if opts is None:
@@ -20,7 +20,10 @@ def Frank_Wolfe(mu, Sigma, rho, x_dim, opts=None):
         tol = opts['tol']
 
     def G_(S):
-        return S[:n, n:] @ LA.inv(S[n:, n:])
+        S_xy = S[n:, n:]
+        if S_xy.size == 1:
+            return S[:n, n:] / S_xy
+        return S[:n, n:] @ LA.inv(S_xy)
 
     def f_(S, G):
         return np.trace(S[:n, :n] - G @ S[n:, :n])
@@ -80,9 +83,12 @@ def my_bisection(Sigma, D, rho, bi_tol):
 
     def h(inv_D):
         IminusD = Id - inv_D
-        return rho**2 - (Sigma * (IminusD @ IminusD)).sum()
+        return rho*rho - vec(Sigma) @ vec(IminusD @ IminusD)
 
     def vec(x): return x.reshape(-1)
+
+    def calc_L(D_inv, Sigma):
+        return LA.multi_dot([D_inv, Sigma, D_inv])
 
     values, vectors = LA.eigh(D)
     v_1 = vectors[:, -1]
@@ -93,8 +99,8 @@ def my_bisection(Sigma, D, rho, bi_tol):
 
     while True:
         gamma = (LB + UB) / 2
-        D_inv = gamma * LA.inv(gamma * Id - D)
-        L = D_inv @ Sigma @ D_inv
+        D_inv = gamma * inv(gamma * Id - D)
+        L = calc_L(D_inv, Sigma)
         h_val = h(D_inv)
 
         if h_val < 0:
@@ -102,8 +108,8 @@ def my_bisection(Sigma, D, rho, bi_tol):
         else:
             UB = gamma
 
-        Delta = gamma * (rho**2 - np.trace(Sigma)) + gamma * \
-            vec(D_inv) @ vec(Sigma) - vec(L) @ vec(D)
+        Delta = gamma * (rho*rho - Sigma.trace()) + gamma * \
+            (D_inv * Sigma).sum() - (L * D).sum()
 
         if h_val >= 0 and Delta < bi_tol:
             break

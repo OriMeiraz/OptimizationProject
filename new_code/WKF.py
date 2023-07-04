@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.linalg as LA
 from Frank_Wolfe import Frank_Wolfe
 from tqdm import trange
 

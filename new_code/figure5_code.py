@@ -18,7 +18,7 @@ def smooth(a, WSZ):
     return np.concatenate((start, out0, stop))
 
 
-np.random.seed(1337)
+np.random.seed(12345)
 n = 2
 m = 1
 sys.A = np.array([[0.9802, 0.0196],
@@ -37,7 +37,7 @@ T = 1000
 
 x_0 = np.array([0, 0])
 V_0 = np.eye(n)
-all_rho = np.arange(1, 2.01, 0.1) * 1e-1
+all_rho = [0.2]
 
 err_WKF = np.zeros((T, run_count, len(all_rho)))
 err_KF = np.zeros((T, run_count))
@@ -57,6 +57,7 @@ for run in trange(run_count, desc='running experiments'):
 
 tmp = np.mean(err_WKF, axis=(0, 1))
 k_rho = np.argmin(tmp)
+print(k_rho)
 means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
 means_W = smooth(10 * np.log10(means_W),  19)
 plt.semilogx(range(1, T+1), means_W, label='WKF')
