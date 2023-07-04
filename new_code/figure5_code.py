@@ -51,7 +51,7 @@ for run in trange(run_count, desc='running experiments'):
     xhat_kalman, _, _, _ = WKF(sys, 0, y,  x_0, V_0)
     err_KF[:, run] = np.sum((x - xhat_kalman)**2, axis=0)
 
-    for k, rho in enumerate(tqdm(all_rho, desc='running all rho', leave=False)):
+    for k, rho in enumerate(all_rho):
         xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
         err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
 
@@ -67,4 +67,5 @@ means = smooth(10 * np.log10(means), 19)
 plt.semilogx(range(1, T+1), means, label='KF')
 
 plt.legend()
+plt.savefig('figure5.png')
 plt.show()
