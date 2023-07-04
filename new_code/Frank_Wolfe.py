@@ -9,7 +9,6 @@ def Frank_Wolfe(mu, Sigma, rho, x_dim, opts):
     iter_max = 1000
     bi_tol = 1e-8
     tol = 1e-4
-    verbose = False
 
     if 'iter_max' in opts:
         iter_max = opts['iter_max']
@@ -17,12 +16,15 @@ def Frank_Wolfe(mu, Sigma, rho, x_dim, opts):
         bi_tol = opts['bi_tol']
     if 'tol' in opts:
         tol = opts['tol']
-    if 'verbose' in opts:
-        verbose = opts['verbose']
 
-    def G_(S): return S[:n, n:] @ LA.inv(S[n:, n:]) @ S[n:, :n]
-    def f_(S, G): return np.trace(S[:n, :n] - G @ S[n:, :n])
-    def vec(x): return x.reshape(-1)
+    def G_(S):
+        return S[:n, n:] @ LA.inv(S[n:, n:]) @ S[n:, :n]
+
+    def f_(S, G):
+        return np.trace(S[:n, :n] - G @ S[n:, :n])
+
+    def vec(x):
+        return x.reshape(-1)
 
     def grad_f_(G):
         IG = np.concatenate([np.eye(n), -G], axis=1)
