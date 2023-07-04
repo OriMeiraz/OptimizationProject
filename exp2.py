@@ -61,6 +61,7 @@ def get_best_radius(tv, small, tol):
     all_norm = []
     min_rad = np.linspace(0.1, 0.2, 11)[np.argmin(all_norms)]
     min_rad = round(min_rad, 2)
+    min_rad = 0.1
     path = f'Experiment2/saved_data/tv_{tv}__small_{small}__rad_{min_rad}__tol_{tol}'
     for i in trange(500, leave=False, desc=f'loading for best radius ({min_rad})'):
         df = pd.read_csv(
@@ -107,12 +108,12 @@ def get_args():
 
 def plot_data(tv, small, tol):
     # check if norms is saved, if not save it
-    if not os.path.exists(f'norms.npy'):
+    if not os.path.exists(f'norms_{tv}_{small}.npy'):
         _, norms = load_data(tv, small, tol)
-        np.save('norms.npy', norms)
+        np.save(f'norms_{tv}_{small}.npy', norms)
     else:
         print('loading norms')
-        norms = np.load('norms.npy')
+        norms = np.load(f'norms_{tv}_{small}.npy')
 
     means = norms.mean(axis=0)
     means = eu.smooth(10*np.log10(means), 19)
