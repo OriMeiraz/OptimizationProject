@@ -1,12 +1,18 @@
 import numpy as np
 import numpy.linalg as LA
 from Frank_Wolfe import Frank_Wolfe
+from tqdm import trange
 
 
-def WKF(sys, rho, Y_t, x_0, V_0, opts):
-    n = sys['A'].shape[0]
-    m = sys['B'].shape[1]
-    T = len(Y_t)
+def WKF(sys, rho, Y_t, x_0, V_0, opts=None):
+    if opts is None:
+        opts = {}
+    n = sys.A.shape[0]
+    if len(sys.D.shape) == 1:
+        m = 1
+    else:
+        m = sys.D.shape[1]
+    T = Y_t.shape[1]
 
     d = n + m
 
@@ -17,13 +23,13 @@ def WKF(sys, rho, Y_t, x_0, V_0, opts):
     G = np.zeros((n, m, T))
     S = np.zeros((d, d, T))
 
-    for t in range(T):
+    for t in trange(T, leave=False):
         mu_t, Sigma_t = predict(
-            x_prev, V_prev, sys['A'], sys['B'], sys['C'], sys['D'])
+            x_prev, V_prev, sys.A, sys.B, sys.C, sys.D)
 
-        try:
+        if isinstance(rho, np.ndarray):
             rho_t = rho[t]
-        except IndexError:
+        else:
             rho_t = rho
 
         xhat[:, t], V[:, :, t], G[:, :, t], S[:, :, t] = update(
@@ -36,8 +42,9 @@ def WKF(sys, rho, Y_t, x_0, V_0, opts):
 
 
 def predict(x_prev, V_prev, A, B, C, D):
-    A_aug = np.concatenate([A, C @ A], axis=0)
-    B_aug = np.concatenate([B, C @ B + D], axis=0)
+    A_aug = np.vstack([A, C @ A])
+    B_aug = np.vstack([B, C @ B + D])
+
     mu_t = A_aug @ x_prev
     Sigma_t = A_aug @ V_prev @ A_aug.T + B_aug @ B_aug.T
     return mu_t, Sigma_t

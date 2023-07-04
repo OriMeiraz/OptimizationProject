@@ -2,7 +2,9 @@ import numpy as np
 import numpy.linalg as LA
 
 
-def Frank_Wolfe(mu, Sigma, rho, x_dim, opts):
+def Frank_Wolfe(mu, Sigma, rho, x_dim, opts=None):
+    if opts is None:
+        opts = {}
     phi_star = {}
     Q_star = {}
     n = x_dim
@@ -18,7 +20,7 @@ def Frank_Wolfe(mu, Sigma, rho, x_dim, opts):
         tol = opts['tol']
 
     def G_(S):
-        return S[:n, n:] @ LA.inv(S[n:, n:]) @ S[n:, :n]
+        return S[:n, n:] @ LA.inv(S[n:, n:])
 
     def f_(S, G):
         return np.trace(S[:n, :n] - G @ S[n:, :n])
@@ -54,7 +56,7 @@ def Frank_Wolfe(mu, Sigma, rho, x_dim, opts):
 
         alpha = 2 / (i + 2)
         S = alpha * L + (1 - alpha) * S
-        if iter > 0:
+        if i > 0:
             obj[i] = obj_current
             res[i] = abs(vec(L-S) @ vec(D))
 
@@ -83,7 +85,7 @@ def my_bisection(Sigma, D, rho, bi_tol):
     def vec(x): return x.reshape(-1)
 
     values, vectors = LA.eigh(D)
-    v_1 = vec[:-1]
+    v_1 = vectors[:, -1]
     lambda_1 = values[-1]
 
     LB = lambda_1 * (1 + np.sqrt(v_1 @ Sigma @ v_1)/rho)
