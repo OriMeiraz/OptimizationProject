@@ -6,6 +6,7 @@ from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 import sys
 import argparse
+from rkalman import rkalman
 
 
 def smooth(a, WSZ):
@@ -46,6 +47,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     np.random.seed(args.seed)
+    print(args)
     n = 2
     m = 1
     sys.A = np.array([[0.9802, 0.0196],
@@ -60,11 +62,12 @@ if __name__ == '__main__':
     sys.D = np.array([0, 0, 1])
 
     run_count = 500
-    T = 1000
+    T = 10
 
     x_0 = np.array([0, 0])
     V_0 = np.eye(n)
     all_rho = [0.2]
+    all_c = [2 * 1e-4]
 
     is_TV = args.time_var
     coeff = 0.99 if not args.small else 0.099
@@ -72,6 +75,7 @@ if __name__ == '__main__':
     if args.run_exp:
         err_WKF = np.zeros((T, run_count, len(all_rho)))
         err_KF = np.zeros((T, run_count))
+        err_KL = np.zeros((T, run_count, len(all_c)))
         for run in trange(run_count, desc='running experiments'):
             x, y, y0 = generate_data(sys, x_0, T, coeff, is_TV)
             xhat_kalman, _, _, _ = WKF(sys, 0, y,  x_0, V_0)
@@ -80,6 +84,11 @@ if __name__ == '__main__':
             for k, rho in enumerate(all_rho):
                 xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
                 err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
+
+            y_delay = np.append([y0], y[:, :-1])
+            for k, c in enumerate(all_c):
+                xhat, _, _, _ = rkalman(sys, c, tau, y_delay, x_0, V_0)
+                err_KL[:, run, k] = np.sum((x - xhat)**2, axis=0)
 
         np.save(f'err_KF_{args.time_var, args.small}.npy', err_KF)
         np.save(f'err_WKF_{args.time_var, args.small}.npy', err_WKF)
@@ -104,5 +113,5 @@ if __name__ == '__main__':
     plt.semilogx(range(1, T+1), means, label='KF')
 
     plt.legend()
-    plt.savefig('figure5.png')
+    plt.savefig(f'figure5_{args.time_var, args.small}.png')
     plt.show()
