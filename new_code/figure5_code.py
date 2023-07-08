@@ -92,11 +92,13 @@ if __name__ == '__main__':
 
         np.save(f'err_KF_{args.time_var, args.small}.npy', err_KF)
         np.save(f'err_WKF_{args.time_var, args.small}.npy', err_WKF)
+        np.save(f'err_KL_{args.time_var, args.small}.npy', err_KL)
 
     else:
         try:
             err_KF = np.load(f'err_KF_{args.time_var, args.small}.npy')
             err_WKF = np.load(f'err_WKF_{args.time_var, args.small}.npy')
+            err_KL = np.load(f'err_KL_{args.time_var, args.small}.npy')
         except FileNotFoundError:
             print('Run the experiment first.')
             sys.exit()
@@ -107,6 +109,13 @@ if __name__ == '__main__':
     means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
     means_W = smooth(10 * np.log10(means_W),  19)
     plt.semilogx(range(1, T+1), means_W, label='WKF')
+
+    tmp = np.mean(err_KL, axis=(0, 1))
+    k_c = np.argmin(tmp)
+    print(k_c)
+    means_KL = np.mean(err_KL[:, :, k_c], axis=1)
+    means_KL = smooth(10 * np.log10(means_KL), 19)
+    plt.semilogx(range(1, T+1), means_KL, label='KL')
 
     means = np.mean(err_KF, axis=1)
     means = smooth(10 * np.log10(means), 19)
