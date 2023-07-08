@@ -62,7 +62,7 @@ if __name__ == '__main__':
     sys.D = np.array([0, 0, 1])
 
     run_count = 500
-    T = 10
+    T = 1000
 
     x_0 = np.array([0, 0])
     V_0 = np.eye(n)
@@ -87,8 +87,8 @@ if __name__ == '__main__':
 
             y_delay = np.append([y0], y[:, :-1])
             for k, c in enumerate(all_c):
-                xhat, _, _, _ = rkalman(sys, c, tau, y_delay, x_0, V_0)
-                err_KL[:, run, k] = np.sum((x - xhat)**2, axis=0)
+                xhat, _, _, _, _ = rkalman(sys, c, tau, y_delay, x_0, V_0)
+                err_KL[:, run, k] = np.sum((x - xhat.T)**2, axis=0)
 
         np.save(f'err_KF_{args.time_var, args.small}.npy', err_KF)
         np.save(f'err_WKF_{args.time_var, args.small}.npy', err_WKF)
