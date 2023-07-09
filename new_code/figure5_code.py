@@ -39,6 +39,8 @@ def get_args():
                         default=False)
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--run_exp', type=str2bool, default=True)
+    parser.add_argument('--rho', type=string, default='all')
+    parser.add_argument('--c', type=string, default='all')
 
     args = parser.parse_args()
     return args
@@ -66,8 +68,10 @@ if __name__ == '__main__':
 
     x_0 = np.array([0, 0])
     V_0 = np.eye(n)
-    all_rho = [0.2]
-    all_c = 1e-4 * np.arange(1, 2.1, 0.1)
+    all_rho = 1e-2 * \
+        np.arange(1, 2.1, 0.1) if args.rho == 'all' else [float(args.rho)]
+    all_c = 1e-4 * \
+        np.arange(1, 2.1, 0.1) if args.c == 'all' else [float(args.c)]
     is_TV = args.time_var
     coeff = 0.99 if not args.small else 0.099
     tau = 0
@@ -80,9 +84,9 @@ if __name__ == '__main__':
             xhat_kalman, _, _, _ = WKF(sys, 0, y,  x_0, V_0)
             err_KF[:, run] = np.sum((x - xhat_kalman)**2, axis=0)
 
-            # for k, rho in enumerate(all_rho):
-            #    xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
-            #    err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
+            for k, rho in enumerate(all_rho):
+                xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
+                err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
 
             y_delay = np.append([y0], y[:, :-1])
             for k, c in enumerate(all_c):
