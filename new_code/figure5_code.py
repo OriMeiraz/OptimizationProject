@@ -81,9 +81,9 @@ if __name__ == '__main__':
             xhat_kalman, _, _, _ = WKF(sys, 0, y,  x_0, V_0)
             err_KF[:, run] = np.sum((x - xhat_kalman)**2, axis=0)
 
-            for k, rho in enumerate(all_rho):
-                xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
-                err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
+            # for k, rho in enumerate(all_rho):
+            #    xhat, _, _, _ = WKF(sys, rho, y, x_0, V_0)
+            #    err_WKF[:, run, k] = np.sum((x - xhat)**2, axis=0)
 
             y_delay = np.append([y0], y[:, :-1])
             for k, c in enumerate(all_c):
@@ -108,19 +108,24 @@ if __name__ == '__main__':
     print(k_rho)
     means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
     means_W = smooth(10 * np.log10(means_W),  19)
-    plt.semilogx(range(1, T+1), means_W, label='WKF')
+    plt.semilogx(range(1, T+1), means_W,
+                 label='Wasserstein filter', color='green')
 
     tmp = np.mean(err_KL, axis=(0, 1))
     k_c = np.argmin(tmp)
     print(k_c)
     means_KL = np.mean(err_KL[:, :, k_c], axis=1)
     means_KL = smooth(10 * np.log10(means_KL), 19)
-    plt.semilogx(range(1, T+1), means_KL, label='KL')
+    plt.semilogx(range(1, T+1), means_KL,
+                 label='Kullback-Leibler filter', color='red')
 
     means = np.mean(err_KF, axis=1)
     means = smooth(10 * np.log10(means), 19)
-    plt.semilogx(range(1, T+1), means, label='KF')
+    plt.semilogx(range(1, T+1), means, label='Kalman filter', color='blue')
 
     plt.legend()
+    plt.xlabel('time step')
+    plt.xlim([1, T])
+    plt.ylabel('Empirical error (dB)')
     plt.savefig(f'figure5_{args.time_var, args.small}.png')
     plt.show()
