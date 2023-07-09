@@ -7,3 +7,6 @@ experiment_1.py
 frank_wolfe_alg.py
 run.txt
 .idea/
+new_code/*.npy
+new_code/*.png
+*.png

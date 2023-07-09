@@ -34,9 +34,9 @@ def str2bool(v):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--time_var', type=str2bool,
-                        default=True)
+                        default=False)
     parser.add_argument('--small', type=str2bool,
-                        default=True)
+                        default=False)
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--run_exp', type=str2bool, default=True)
 
@@ -67,8 +67,7 @@ if __name__ == '__main__':
     x_0 = np.array([0, 0])
     V_0 = np.eye(n)
     all_rho = [0.2]
-    all_c = [2 * 1e-4]
-
+    all_c = 1e-4 * np.arange(1, 2.1, 0.1)
     is_TV = args.time_var
     coeff = 0.99 if not args.small else 0.099
     tau = 0
@@ -103,13 +102,13 @@ if __name__ == '__main__':
             print('Run the experiment first.')
             sys.exit()
 
-    tmp = np.mean(err_WKF, axis=(0, 1))
-    k_rho = np.argmin(tmp)
-    print(k_rho)
-    means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
-    means_W = smooth(10 * np.log10(means_W),  19)
-    plt.semilogx(range(1, T+1), means_W,
-                 label='Wasserstein filter', color='green')
+    # tmp = np.mean(err_WKF, axis=(0, 1))
+    # k_rho = np.argmin(tmp)
+    # print(k_rho)
+    # means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
+    # means_W = smooth(10 * np.log10(means_W),  19)
+    # plt.semilogx(range(1, T+1), means_W,
+    #             label='Wasserstein filter', color='green')
 
     tmp = np.mean(err_KL, axis=(0, 1))
     k_c = np.argmin(tmp)
