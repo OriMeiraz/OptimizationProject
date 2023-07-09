@@ -26,7 +26,7 @@ def maxtol(A, B, C, D, tau, N):
 
         T = None
 
-        for l in range(N):
+        for l in range(1, N+1):
             if l <= N-k:
                 T = np.hstack([T, np.zeros((p, m))]
                               ) if T is not None else np.zeros((p, m))
@@ -35,16 +35,16 @@ def maxtol(A, B, C, D, tau, N):
                 T = np.hstack([T, [C @ Al @ B]]
                               ) if T is not None else C @ Al @ B
 
-        H = np.vstack([H, T]) if H is not None else T
+        H = np.vstack([T, H]) if H is not None else T
         T = None
-        for l in range(N):
+        for l in range(1, N+1):
             if l <= N-k:
                 T = np.hstack([T, np.zeros((n, m))]
                               ) if T is not None else np.zeros((n, m))
             else:
                 Al = LA.matrix_power(A, l-N + k - 1)
                 T = np.hstack([T, Al @ B]) if T is not None else Al @ B
-        L = np.vstack([L, T]) if L is not None else T
+        L = np.vstack([T, L]) if L is not None else T
     HD_inv = inv(DR @ DR.T + H @ H.T)
     Om = Ob.T @ HD_inv @ Ob
     J = ObR - L @ H.T @ HD_inv @ Ob
@@ -83,7 +83,7 @@ def maxtol(A, B, C, D, tau, N):
         thNmax += np.inf
 
     if thN > thNmax:
-        cN += inf
+        cN += np.inf
 
     else:
         if tau == 0:
@@ -153,7 +153,8 @@ def rkiteration(A, B, C, D, V, tau, c, x, y):
     G = A @ V @ C.T * (C @ V @ C.T + R) ** (-1)
     x_pred = (A @ x.T + G * (y - C @ x.T)).T
     GD = np.kron(G, D).reshape(2, -1)
-    P = (A - G @ C) @ V @ (A - G @ C).T + (B - GD) @ (B - GD).T
+    GC = np.outer(G, C)
+    P = (A - GC) @ V @ (A - GC).T + (B - GD) @ (B - GD).T
     L = np.linalg.cholesky(P)
     value = 1
     t1 = 0
