@@ -39,8 +39,8 @@ def get_args():
                         default=False)
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--run_exp', type=str2bool, default=True)
-    parser.add_argument('--rho', type=string, default='all')
-    parser.add_argument('--c', type=string, default='all')
+    parser.add_argument('--rho', type=str, default='all')
+    parser.add_argument('--c', type=str, default='all')
 
     args = parser.parse_args()
     return args
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     x_0 = np.array([0, 0])
     V_0 = np.eye(n)
-    all_rho = 1e-2 * \
+    all_rho = 1e-1 * \
         np.arange(1, 2.1, 0.1) if args.rho == 'all' else [float(args.rho)]
     all_c = 1e-4 * \
         np.arange(1, 2.1, 0.1) if args.c == 'all' else [float(args.c)]
@@ -105,26 +105,28 @@ if __name__ == '__main__':
         except FileNotFoundError:
             print('Run the experiment first.')
             sys.exit()
-
-    # tmp = np.mean(err_WKF, axis=(0, 1))
-    # k_rho = np.argmin(tmp)
-    # print(k_rho)
-    # means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
-    # means_W = smooth(10 * np.log10(means_W),  19)
-    # plt.semilogx(range(1, T+1), means_W,
-    #             label='Wasserstein filter', color='green')
-
+            
+    means = np.mean(err_KF, axis=1)
+    means = smooth(10 * np.log10(means), 19)
+    plt.semilogx(range(1, T+1), means, label='Kalman filter', color='blue')
+    
     tmp = np.mean(err_KL, axis=(0, 1))
     k_c = np.argmin(tmp)
-    print(k_c)
+    print(f"best c is {all_c[k_c]}")
     means_KL = np.mean(err_KL[:, :, k_c], axis=1)
     means_KL = smooth(10 * np.log10(means_KL), 19)
     plt.semilogx(range(1, T+1), means_KL,
                  label='Kullback-Leibler filter', color='red')
 
-    means = np.mean(err_KF, axis=1)
-    means = smooth(10 * np.log10(means), 19)
-    plt.semilogx(range(1, T+1), means, label='Kalman filter', color='blue')
+    tmp = np.mean(err_WKF, axis=(0, 1))
+    k_rho = np.argmin(tmp)
+    print(f"best rho is {all_rho[k_rho]}")
+    means_W = np.mean(err_WKF[:, :, k_rho], axis=1)
+    means_W = smooth(10 * np.log10(means_W),  19)
+    plt.semilogx(range(1, T+1), means_W,
+                 label='Wasserstein filter', color='orange')
+
+
 
     plt.legend()
     plt.xlabel('time step')

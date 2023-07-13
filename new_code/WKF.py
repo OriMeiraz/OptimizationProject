@@ -22,7 +22,7 @@ def WKF(sys, rho, Y_t, x_0, V_0, opts=None):
     G = np.zeros((n, m, T))
     S = np.zeros((d, d, T))
 
-    for t in trange(T, leave=False, desc='WKF'):
+    for t in trange(T, leave=False, desc=f'WKF iteration (rho = {rho})'):
         mu_t, Sigma_t = predict(
             x_prev, V_prev, sys.A, sys.B, sys.C, sys.D)
 

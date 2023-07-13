@@ -130,7 +130,7 @@ def rkalman(sys, c, tau, y, x_0, V_0):
     V[:, :, 0] = V_0
     y = y.reshape(-1, 1)
 
-    for k in trange(T, desc='KL iteration', leave=False):
+    for k in trange(T, desc=f'KL iteration (c = {c})', leave=False):
         x[k+1, :], V[:, :, k+1], G[:, :, k+1], P[:, :, k+1], th[k] = \
             rkiteration(A, B, C, D, V[:, :, k], tau, c, x[k, :], y[k, :])
 
